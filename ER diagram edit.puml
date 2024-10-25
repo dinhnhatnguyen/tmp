@@ -1,0 +1,239 @@
+@startuml
+!define primary_key(x) <b>x</b>
+!define foreign_key(x) <i>x</i>
+
+entity Users {
+  primary_key(maNguoiDung) : INT <<PK>>
+  tenDangNhap : VARCHAR(50) <<UNIQUE>>
+  thuDienTu : VARCHAR(100) <<UNIQUE>>
+  matKhau : VARCHAR(100)
+  vaiTro : VARCHAR(20) -- guest, registered, business
+  duongDanAnh : VARCHAR(255)
+  hoTen : VARCHAR(100)
+  ngaySinh : DATE
+  soDienThoai : VARCHAR(15)
+  diaChi : VARCHAR(255)
+  moTa : TEXT
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
+
+
+
+entity Posts {
+  primary_key(maBaiViet) : INT <<PK>>
+  foreign_key(maTacGia) : INT <<FK>> -- References Users(userId)
+  tieuDe : VARCHAR(255)
+  noiDung : TEXT
+  loai : VARCHAR(20) -- post, itinerary, service
+  trangThai : VARCHAR(20) -- PUBLIC, PRIVATE, FOLLOWER
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
+entity Itinerary {
+  itineraryId : INT
+  startDate : DATE
+  endDate : DATE
+  activities : TEXT  -- Danh sách các hoạt động hoặc địa điểm
+  notes : TEXT  -- Những lưu ý của lịch trình
+  postId : INT  -- Liên kết với Posts(postId)
+  location : VARCHAR(255)
+}
+
+entity Media {
+  primary_key(maPhuongTien) : INT <<PK>>
+  foreign_key(maBaiViet) : INT <<FK>> -- References Posts(postId)
+  loaiPhuongTien : VARCHAR(20) -- image, video
+  duongDan : VARCHAR(255)
+  ngayTaiLen : DATETIME
+}
+
+
+entity Comments {
+  primary_key(maBinhLuan) : INT <<PK>>
+  foreign_key(maBaiViet) : INT <<FK>> -- References Posts(postId)
+  foreign_key(maNguoiBinhLuan) : INT <<FK>> -- References Users(userId)
+  noiDungBinhLuan : TEXT
+  ngayTao : DATETIME
+}
+
+entity Likes {
+  primary_key(maThich) : INT <<PK>>
+  foreign_key(maBaiViet) : INT <<FK>> -- References Posts(postId)
+  foreign_key(maNguoiDung) : INT <<FK>> -- References Users(userId)
+}
+
+entity Reports {
+  primary_key(maBaoCao) : INT <<PK>>
+  foreign_key(maNguoiBaoCao) : INT <<FK>> -- References Users(userId)
+  maNoiDungBaoCao : INT -- Can refer to Posts or Users
+  loai : VARCHAR(20) -- account, post
+  trangThai : VARCHAR(20) -- processing, completed
+  ngayTao : DATETIME
+}
+
+
+
+
+
+entity Services {
+  primary_key(maDichVu) : INT <<PK>>
+  foreign_key(maDoanhNghiep) : INT <<FK>> -- References BusinessDetails(businessId)
+  loaiDichVu : VARCHAR(20) -- car_rental, hotel_booking, flight_ticket
+  gia : DOUBLE
+  tinhTrangKhaDung : BOOLEAN
+  viTri : VARCHAR(255)
+  moTa : TEXT
+  danhGia : FLOAT
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
+entity CarRentalServices {
+  primary_key(maThueXe) : INT <<PK>>
+  foreign_key(maDichVu) : INT <<FK>> -- References Services(serviceId)
+  kieuXe : VARCHAR(100)
+  thoiGianThue : VARCHAR(50)
+  diemDon : VARCHAR(255)
+  diemTra : VARCHAR(255)
+  chinhSachNhienLieu : VARCHAR(100)
+  hopSo : VARCHAR(20) -- automatic, manual
+}
+
+entity HotelBookingServices {
+  primary_key(maDatPhong) : INT <<PK>>
+  foreign_key(maDichVu) : INT <<FK>> -- References Services(serviceId)
+  loaiPhong : VARCHAR(100)
+  soPhongTrong : INT
+  gioNhanPhong : TIME
+  gioTraPhong : TIME
+  tienNghi : TEXT -- List of amenities
+}
+
+entity FlightTicketServices {
+  primary_key(maVeMayBay) : INT <<PK>>
+  foreign_key(maDichVu) : INT <<FK>> -- References Services(serviceId)
+  soHieuChuyenBay : VARCHAR(20)
+  sanBayDi : VARCHAR(100)
+  sanBayDen : VARCHAR(100)
+  gioCatCanh : DATETIME
+  gioHaCanh : DATETIME
+  hangHangKhong : VARCHAR(100)
+  hangGhe : VARCHAR(50) -- economy, business, first
+}
+
+entity Orders {
+  primary_key(maDonHang) : INT <<PK>>
+  foreign_key(maNguoiDung) : INT <<FK>> -- References Users(userId)
+  trangThai : VARCHAR(50) -- pending, paid
+  ngayTao : DATETIME
+}
+
+
+entity OrderDetails {
+  primary_key(maChiTietDonHang) : INT <<PK>>
+  foreign_key(maDonHang) : INT <<FK>> -- References Orders(orderId)
+  foreign_key(maDichVu) : INT <<FK>> -- References Services(serviceId)
+  soLuong : INT
+  tongGia : DOUBLE
+}
+
+entity Transactions {
+  primary_key(maGiaoDich) : INT <<PK>>
+  foreign_key(maDonHang) : INT <<FK>> -- References Orders(orderId)
+  phuongThucThanhToan : VARCHAR(50)
+  soTien : DOUBLE
+  trangThaiThanhToan : VARCHAR(50) -- success, failed
+  ngayTao : DATETIME
+}
+
+
+
+
+
+
+
+
+
+entity Admins {
+  primary_key(maQuanTriVien) : INT <<PK>>
+  foreign_key(maNguoiDung) : INT <<FK>> -- References Users(userId)
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
+entity BusinessDetails {
+  primary_key(maDoanhNghiep) : INT <<PK>>
+  foreign_key(maNguoiDung) : INT <<FK>> -- References Users(userId)
+  tenDoanhNghiep : VARCHAR(255)
+  loaiDichVu : VARCHAR(50)
+  moTa : TEXT
+  thuDienTuLienHe : VARCHAR(100)
+  soDienThoaiLienHe : VARCHAR(15)
+  diaChiChinhThuc : VARCHAR(255)
+  trangWeb : VARCHAR(255)
+  giayPhepKinhDoanh : VARCHAR(255)
+  chungNhanBaoHiem : VARCHAR(255)
+  soTaiKhoan : VARCHAR(50)
+
+  tenNganHang : VARCHAR(100)
+  maSoThue : VARCHAR(50)
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
+entity UserFollowers {
+  primary_key(maTheoDoi) : INT <<PK>>
+  foreign_key(maNguoiTheoDoi) : INT <<FK>> -- References Users(userId)
+  foreign_key(maNguoiDuocTheoDoi) : INT <<FK>> -- References Users(userId)
+  ngayTao : DATETIME
+}
+
+entity TravelTypes {
+  primary_key(maLoai) : INT <<PK>>
+  tenLoai : VARCHAR(50) -- Name of the travel type (e.g., adventure, cultural)
+}
+
+entity Interests {
+  primary_key(maQuanTam) : INT <<PK>>
+  tenQuanTam : VARCHAR(50) -- Name of the interest (e.g., nature, food)
+}
+
+entity Tags {
+  primary_key(maThe) : INT <<PK>>
+  ten : VARCHAR(100) <<UNIQUE>>
+}
+
+entity PostTags {
+  primary_key(maBaiVietThe) : INT <<PK>>
+  foreign_key(maBaiViet) : INT <<FK>> -- References Posts(postId)
+  foreign_key(maThe) : INT <<FK>> -- References Tags(tagId)
+}
+
+' Relationships
+Users ||--o{ Admins : "là quản trị viên"
+Users ||--o{ Posts : "tạo bài viết"
+Users ||--o{ Services : "cung cấp dịch vụ"
+Users ||--o{ Orders : "tạo đơn hàng"
+Users ||--o{ BusinessDetails : "chi tiết"
+Services ||--o{ CarRentalServices : "chi tiết"
+Services ||--o{ HotelBookingServices : "chi tiết "
+Services ||--o{ FlightTicketServices : "chi tiết"
+Posts ||--o{ Comments : "có bình luận"
+Posts ||--o{ Likes : "nhận lượt thích"
+Posts ||--o{ Reports : "bị báo cáo"
+Posts ||--o{ Media : "chứa"
+Posts ||--o{ PostTags : "được gắn thẻ"
+Posts ||--o{ Itinerary : "chi tiết"
+
+Tags ||--o{ PostTags : "được liên kết với bài viết"
+Services ||--o{ Orders : "nằm trong đơn hàng"
+Orders ||--o{ Transactions : "tạo giao dịch"
+Orders ||--o{ OrderDetails : "có chi tiết đơn hàng"
+Users ||--o{ Reports : "tạo báo cáo"
+Users ||--o{ UserFollowers : "theo dõi người dùng khác"
+Users ||--o{ TravelTypes : "có sở thích du lịch"
+Users ||--o{ Interests : "có sở thích"
+@enduml
