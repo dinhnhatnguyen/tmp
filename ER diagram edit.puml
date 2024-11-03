@@ -8,7 +8,8 @@ entity Users {
   thuDienTu : VARCHAR(100) <<UNIQUE>>
   matKhau : VARCHAR(100)
   vaiTro : VARCHAR(20) -- guest, registered, business
-  duongDanAnh : VARCHAR(255)
+  avartar : VARCHAR(255)
+  gioiTinh: BINARY
   hoTen : VARCHAR(100)
   ngaySinh : DATE
   soDienThoai : VARCHAR(15)
@@ -32,14 +33,26 @@ entity Posts {
   ngayCapNhat : DATETIME
 }
 
+
+
+entity PostShares {
+  primary_key(maBaiVietChiaSe) : INT <<PK>>
+  foreign_key(maBaiViet) : INT <<FK>> -- References Posts(PostId) 
+  foreign_key(maNguoiChiaSe) : INT <<FK>> -- References Users(userId)
+  noiDung : TEXT
+  trangThai : VARCHAR(20) -- PUBLIC, PRIVATE, FOLLOWER
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
 entity Itinerary {
-  itineraryId : INT
-  startDate : DATE
-  endDate : DATE
-  activities : TEXT  -- Danh sách các hoạt động hoặc địa điểm
+  primary_key(maLichTrinh) : INT <<PK>>
+  ngayBatDau : DATE
+  ngayKetThuc : DATE
+  cacHoatDong : TEXT  -- Danh sách các hoạt động hoặc địa điểm
   notes : TEXT  -- Những lưu ý của lịch trình
-  postId : INT  -- Liên kết với Posts(postId)
-  location : VARCHAR(255)
+  foreign_key(maBaiViet) : INT <<FK>> -- References Posts(PostId)
+  diaDiem : VARCHAR(255)
 }
 
 entity Media {
@@ -65,6 +78,10 @@ entity Likes {
   foreign_key(maNguoiDung) : INT <<FK>> -- References Users(userId)
 }
 
+
+
+
+
 entity Reports {
   primary_key(maBaoCao) : INT <<PK>>
   foreign_key(maNguoiBaoCao) : INT <<FK>> -- References Users(userId)
@@ -72,16 +89,30 @@ entity Reports {
   loai : VARCHAR(20) -- account, post
   trangThai : VARCHAR(20) -- processing, completed
   ngayTao : DATETIME
+  ngayXuLy: DATETIME
 }
 
 
 
 
 
-entity Services {
+' entity Services {
+'   primary_key(maDichVu) : INT <<PK>>
+'   foreign_key(maDoanhNghiep) : INT <<FK>> -- References BusinessDetails(businessId)
+'   loaiDichVu : VARCHAR(20) -- car_rental, hotel_booking, flight_ticket
+'   gia : DOUBLE
+'   tinhTrangKhaDung : BOOLEAN
+'   viTri : VARCHAR(255)
+'   moTa : TEXT
+'   danhGia : FLOAT
+'   ngayTao : DATETIME
+'   ngayCapNhat : DATETIME
+' }
+
+entity ServicePost {
   primary_key(maDichVu) : INT <<PK>>
-  foreign_key(maDoanhNghiep) : INT <<FK>> -- References BusinessDetails(businessId)
-  loaiDichVu : VARCHAR(20) -- car_rental, hotel_booking, flight_ticket
+  foreign_key(maBaiViet) : INT <<FK>> -- References Posts(Posts)
+  loaiDichVu : VARCHAR(20) -- Verhicle_rental, hotel_booking, flight_ticket
   gia : DOUBLE
   tinhTrangKhaDung : BOOLEAN
   viTri : VARCHAR(255)
@@ -91,7 +122,8 @@ entity Services {
   ngayCapNhat : DATETIME
 }
 
-entity CarRentalServices {
+
+entity VerhicleRentalServices {
   primary_key(maThueXe) : INT <<PK>>
   foreign_key(maDichVu) : INT <<FK>> -- References Services(serviceId)
   kieuXe : VARCHAR(100)
@@ -191,6 +223,22 @@ entity UserFollowers {
   ngayTao : DATETIME
 }
 
+entity UserInterests {
+  primary_key(maSoThich_NguoiDung) : INT <<PK>>
+  foreign_key(maNguoiDung) : INT <<FK>> -- References Users(userId)
+  foreign_key(maQuanTam): INT <<FK>> -- References Interests(maQuanTam)
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
+entity UserTravelTypes {
+  primary_key(maLoaiHinh_NguoiDung) : INT <<PK>>
+  foreign_key(maNguoiDung) INT <<FK>> -- References Users(userId)
+  foreign_key(maLoai) INT <<FK>> -- References TravelTypes(maLoai)
+  ngayTao : DATETIME
+  ngayCapNhat : DATETIME
+}
+
 entity TravelTypes {
   primary_key(maLoai) : INT <<PK>>
   tenLoai : VARCHAR(50) -- Name of the travel type (e.g., adventure, cultural)
@@ -215,25 +263,49 @@ entity PostTags {
 ' Relationships
 Users ||--o{ Admins : "là quản trị viên"
 Users ||--o{ Posts : "tạo bài viết"
-Users ||--o{ Services : "cung cấp dịch vụ"
+' Users ||--o{ Services : "cung cấp dịch vụ"
+' Users ||--o{ ServicePost : "cung cấp dịch vụ"
 Users ||--o{ Orders : "tạo đơn hàng"
 Users ||--o{ BusinessDetails : "chi tiết"
-Services ||--o{ CarRentalServices : "chi tiết"
-Services ||--o{ HotelBookingServices : "chi tiết "
-Services ||--o{ FlightTicketServices : "chi tiết"
+
+
+
+' Services ||--o{ CarRentalServices : "chi tiết"
+' Services ||--o{ HotelBookingServices : "chi tiết "
+' Services ||--o{ FlightTicketServices : "chi tiết"
+
+
+
+ServicePost||--o{ VerhicleRentalServices : "chi tiết"
+ServicePost||--o{ HotelBookingServices : "chi tiết "
+ServicePost||--o{ FlightTicketServices : "chi tiết"
+
 Posts ||--o{ Comments : "có bình luận"
 Posts ||--o{ Likes : "nhận lượt thích"
 Posts ||--o{ Reports : "bị báo cáo"
 Posts ||--o{ Media : "chứa"
 Posts ||--o{ PostTags : "được gắn thẻ"
-Posts ||--o{ Itinerary : "chi tiết"
+Posts ||--o{ Itinerary : "Mở rộng"
+Posts ||--o{ PostShares 
+Posts ||--|| ServicePost :"Mở rộng"
+
+
 
 Tags ||--o{ PostTags : "được liên kết với bài viết"
-Services ||--o{ Orders : "nằm trong đơn hàng"
+' Services ||--o{ Orders : "nằm trong đơn hàng"
+ServicePost ||--o{OrderDetails : "nằm trong đơn hàng"
+
 Orders ||--o{ Transactions : "tạo giao dịch"
 Orders ||--o{ OrderDetails : "có chi tiết đơn hàng"
+
+
 Users ||--o{ Reports : "tạo báo cáo"
 Users ||--o{ UserFollowers : "theo dõi người dùng khác"
-Users ||--o{ TravelTypes : "có sở thích du lịch"
-Users ||--o{ Interests : "có sở thích"
+' Users ||--o{ TravelTypes : "có sở thích du lịch"
+' Users ||--o{ Interests : "có sở thích"
+
+Users ||--o{ UserInterests
+Users ||--o{ UserTravelTypes
+UserInterests }o--|| Interests
+UserTravelTypes }o--|| TravelTypes
 @enduml
